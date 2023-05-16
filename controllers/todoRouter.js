@@ -68,4 +68,17 @@ router.post("", async (request, response) => {
   return response.status(201).json(newTodo).end();
 });
 
+//update todos title and description
+router.patch("/:todoId", async (request, response) => {
+  const todoId = request.params.todoId;
+
+  const todo = await Todo.findByIdAndUpdate(todoId, request.body);
+
+  if (!todo) {
+    return response.status(404).json({ error: "Todo not found..." });
+  }
+
+  return response.status(200).json({ message: "todo title updated" });
+});
+
 module.exports = router;
