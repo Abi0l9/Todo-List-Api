@@ -1,19 +1,20 @@
 const User = require("../models/User");
 const Todo = require("../models/Todo");
+const handleUserId = require("../utils/handlers");
 const router = require("express").Router();
 
-const handleUserId = async (id) => {
-  if (!id) {
-    return response.send("please provide user id").end();
-  }
+// const handleUserId = async (id, response) => {
+//   if (!id) {
+//     return response.send("please provide user id").end();
+//   }
 
-  const user = await User.findById(id);
-  if (!user) {
-    return response.send("Invalid userId");
-  }
+//   const user = await User.findById(id);
+//   if (!user) {
+//     return response.send("Invalid userId");
+//   }
 
-  return user;
-};
+//   return user;
+// };
 
 //get alltodos
 router.get("", async (request, response) => {
@@ -40,7 +41,7 @@ router.get("/:todoId", async (request, response) => {
 
 //create a new todo
 router.post("", async (request, response) => {
-  const user = await handleUserId(request.userId);
+  const user = await handleUserId(request.userId, response);
   const reqFields = ["title", "description", "list"];
 
   const checkFields = Object.keys(request.body).filter((f) =>
@@ -57,13 +58,9 @@ router.post("", async (request, response) => {
   const body = request.body;
   const newTodo = new Todo({ ...body, user: user.id });
 
-  try {
-    await newTodo.save();
-    user.todos = user.todos.concat(newTodo);
-    await user.save();
-  } catch (e) {
-    return response.json({ error: e.message });
-  }
+  await newTodo.save();
+  user.todos = user.todos.concat(newTodo);
+  await user.save();
 
   return response.status(201).json(newTodo).end();
 });

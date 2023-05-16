@@ -1,14 +1,21 @@
 const mongoose = require("mongoose");
-const uniqueValidator = require("mongoose-unique-validator");
+
+const TodoItem = mongoose.Schema({
+  item: {
+    type: String,
+    required: true,
+    index: true,
+    sparse: true,
+  },
+});
 
 const schema = mongoose.Schema({
   title: {
     type: String,
     required: true,
-    unique: true,
   },
   description: String,
-  list: [],
+  list: [TodoItem],
   completed: {
     type: Boolean,
     default: false,
@@ -19,12 +26,10 @@ const schema = mongoose.Schema({
   },
 });
 
-schema.plugin(uniqueValidator);
-
 schema.set("toJSON", {
   transform: (document, returnedObject) => {
-    returnedObject.id = returnedObject._id.toString();
-    delete returnedObject._id;
+    // returnedObject.id = returnedObject._id.toString();
+    // delete returnedObject._id;
     delete returnedObject.__v;
   },
 });
