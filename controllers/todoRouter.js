@@ -81,4 +81,17 @@ router.patch("/:todoId", async (request, response) => {
   return response.status(200).json({ message: "todo title updated" });
 });
 
+//delete a todo
+router.delete("/:todoId", async (request, response) => {
+  const todoId = request.params.todoId;
+
+  const todo = await Todo.findOneAndDelete(todoId);
+
+  if (!todo) {
+    return response.status(404).json({ error: "Todo not found..." });
+  }
+
+  return response.status(200).json(todo);
+});
+
 module.exports = router;
