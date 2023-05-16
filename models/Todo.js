@@ -5,9 +5,14 @@ const schema = mongoose.Schema({
   title: {
     type: String,
     required: true,
+    unique: true,
   },
   description: String,
   list: [],
+  completed: {
+    type: Boolean,
+    default: false,
+  },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",

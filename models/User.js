@@ -11,7 +11,7 @@ const schema = mongoose.Schema({
   todos: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Todos",
+      ref: "Todo",
     },
   ],
 });

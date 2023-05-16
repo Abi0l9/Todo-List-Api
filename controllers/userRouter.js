@@ -1,6 +1,17 @@
 const User = require("../models/User");
 const router = require("express").Router();
 
+router.get("", async (request, response) => {
+  const user = await User.findById(request.userId).populate("todos", {
+    title: 1,
+    description: 1,
+    list: 1,
+    completed: 1,
+  });
+
+  return response.json({ user });
+});
+
 router.post("", async (request, response) => {
   const { username } = request.body;
   const userExists = await User.findOne({ username });
