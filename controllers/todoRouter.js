@@ -118,7 +118,7 @@ router.patch("/:todoId/list", async (request, response) => {
   if (!(mainTodo || userTodo)) {
     return response.status(404).json({ error: "Todo does not exist." });
   }
- console.log({...request.body})
+
   const newItem = request.body.items;
 
   userTodo.list = userTodo.list.concat(newItem);
@@ -130,6 +130,40 @@ router.patch("/:todoId/list", async (request, response) => {
     return response.json({ error: e.message });
   }
   return response.json({ newItem });
+});
+
+router.get("/:todoId/list/:itemId", async (request, response) => {
+  const getUser = await handleUserId(request.userId, response);
+
+  const { todoId, itemId } = request.params;
+
+  if (!todoId) {
+    return response.status(400).json({ error: "Please, include the todo id" });
+  }
+
+  const user = await User.findById(request.userId).populate("todos", {
+    title: 1,
+    description: 1,
+    list: 1,
+    completed: 1,
+  });
+
+  if (!user) {
+    return response.status(404).json({ error: "User not found" });
+  }
+
+  const userTodo = user.todos.find((todo) => todo.id === todoId);
+
+  if (!userTodo) {
+    return response.status(404).json({ error: "Todo does not exist." });
+  }
+  const item = userTodo.list.find((utd) => utd._id.toString() === itemId);
+
+  if (!item) {
+    return response.status(404).json({ error: "Item does not exist." });
+  }
+
+  return response.status(200).json({ item }).end()
 });
 
 module.exports = router;
