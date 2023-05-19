@@ -1,6 +1,7 @@
 const User = require("../models/User");
 
 const handleUserId = async (id, response) => {
+  
   if (!id) {
     throw new Error("please provide user id");
   }

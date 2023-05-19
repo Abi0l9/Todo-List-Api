@@ -56,7 +56,7 @@ router.post("", async (request, response) => {
   }
 
   const body = request.body;
-  const newTodo = new Todo({ ...body, user: user.id });
+  const newTodo = new Todo({ ...body, user: user._id });
 
   await newTodo.save();
   user.todos = user.todos.concat(newTodo);
@@ -89,6 +89,47 @@ router.delete("/:todoId", async (request, response) => {
   }
 
   return response.status(200).json(todo);
+});
+
+//append to a todo list
+router.patch("/:todoId/list", async (request, response) => {
+  const getUser = await handleUserId(request.userId, response);
+
+  const todoId = request.params.todoId;
+  if (!todoId) {
+    return response.status(400).json({ error: "Please, include the todo id" });
+  }
+
+  const user = await User.findById(request.userId).populate("todos", {
+    title: 1,
+    description: 1,
+    list: 1,
+    completed: 1,
+  });
+
+  if (!user) {
+    return response.status(404).json({ error: "User not found" });
+  }
+
+  const mainTodo = await Todo.findById(todoId);
+
+  const userTodo = user.todos.find((todo) => todo.id === todoId);
+
+  if (!(mainTodo || userTodo)) {
+    return response.status(404).json({ error: "Todo does not exist." });
+  }
+ console.log({...request.body})
+  const newItem = request.body.items;
+
+  userTodo.list = userTodo.list.concat(newItem);
+  mainTodo.list = mainTodo.list.concat(newItem);
+  try {
+    user.save();
+    mainTodo.save();
+  } catch (e) {
+    return response.json({ error: e.message });
+  }
+  return response.json({ newItem });
 });
 
 module.exports = router;
