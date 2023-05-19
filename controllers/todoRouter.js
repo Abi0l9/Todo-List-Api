@@ -163,7 +163,37 @@ router.get("/:todoId/list/:itemId", async (request, response) => {
     return response.status(404).json({ error: "Item does not exist." });
   }
 
-  return response.status(200).json({ item }).end()
+  return response.status(200).json({ item }).end();
+});
+
+router.get("/:todoId/list", async (request, response) => {
+  const getUser = await handleUserId(request.userId, response);
+
+  const { todoId } = request.params;
+
+  if (!todoId) {
+    return response.status(400).json({ error: "Please, include the todo id" });
+  }
+
+  const user = await User.findById(request.userId).populate("todos", {
+    title: 1,
+    description: 1,
+    list: 1,
+    completed: 1,
+  });
+
+  if (!user) {
+    return response.status(404).json({ error: "User not found" });
+  }
+
+  const userTodo = user.todos.find((todo) => todo.id === todoId);
+
+  if (!userTodo) {
+    return response.status(404).json({ error: "Todo does not exist." });
+  }
+  const items = userTodo.list;
+
+  return response.status(200).json({ items }).end();
 });
 
 module.exports = router;
