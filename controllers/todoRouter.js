@@ -3,25 +3,6 @@ const Todo = require("../models/Todo");
 const handleUserId = require("../utils/handlers");
 const router = require("express").Router();
 
-// const handleUserId = async (id, response) => {
-//   if (!id) {
-//     return response.send("please provide user id").end();
-//   }
-
-//   const user = await User.findById(id);
-//   if (!user) {
-//     return response.send("Invalid userId");
-//   }
-
-//   return user;
-// };
-
-//get alltodos
-router.get("", async (request, response) => {
-  const todos = await Todo.find({}).populate("user", { username: 1, id: 1 });
-
-  return response.json({ todos });
-});
 
 //retrieve a specific todo
 router.get("/:todoId", async (request, response) => {
@@ -37,10 +18,10 @@ router.get("/:todoId", async (request, response) => {
   }
 
   return response.status(200).json({ todo });
-});
+})
 
 //create a new todo
-router.post("", async (request, response) => {
+	.post("", async (request, response) => {
   const user = await handleUserId(request.userId, response);
   const reqFields = ["title", "description", "list"];
 
@@ -63,10 +44,10 @@ router.post("", async (request, response) => {
   await user.save();
 
   return response.status(201).json(newTodo).end();
-});
+})
 
 //update todos title and description
-router.patch("/:todoId", async (request, response) => {
+	.patch("/:todoId", async (request, response) => {
   const todoId = request.params.todoId;
 
   const todo = await Todo.findByIdAndUpdate(todoId, request.body);
@@ -76,10 +57,10 @@ router.patch("/:todoId", async (request, response) => {
   }
 
   return response.status(200).json({ message: "todo title updated" });
-});
+})
 
 //delete a todo
-router.delete("/:todoId", async (request, response) => {
+.delete("/:todoId", async (request, response) => {
   const todoId = request.params.todoId;
 
   const todo = await Todo.findOneAndDelete(todoId);
@@ -89,10 +70,10 @@ router.delete("/:todoId", async (request, response) => {
   }
 
   return response.status(200).json(todo);
-});
+})
 
 //append to a todo list
-router.patch("/:todoId/list", async (request, response) => {
+.patch("/:todoId/list", async (request, response) => {
   const getUser = await handleUserId(request.userId, response);
 
   const todoId = request.params.todoId;
@@ -130,10 +111,10 @@ router.patch("/:todoId/list", async (request, response) => {
     return response.json({ error: e.message });
   }
   return response.json({ newItem });
-});
+})
 
 //retrieve a specific item from a list
-router.get("/:todoId/list/:itemId", async (request, response) => {
+.get("/:todoId/list/:itemId", async (request, response) => {
   const getUser = await handleUserId(request.userId, response);
 
   const { todoId, itemId } = request.params;
@@ -165,83 +146,131 @@ router.get("/:todoId/list/:itemId", async (request, response) => {
   }
 
   return response.status(200).json({ item }).end();
-});
+})
 
 //retrieve all items in a todo list
-router.get("/:todoId/list", async (request, response) => {
-  const getUser = await handleUserId(request.userId, response);
 
-  const { todoId } = request.params;
+  .get("/:todoId/list", async (request, response) => {
+    const getUser = await handleUserId(request.userId, response);
 
-  if (!todoId) {
-    return response.status(400).json({ error: "Please, include the todo id" });
-  }
+    const { todoId } = request.params;
 
-  const user = await User.findById(request.userId).populate("todos", {
-    title: 1,
-    description: 1,
-    list: 1,
-    completed: 1,
-  });
-
-  if (!user) {
-    return response.status(404).json({ error: "User not found" });
-  }
-
-  const userTodo = user.todos.find((todo) => todo.id === todoId);
-
-  if (!userTodo) {
-    return response.status(404).json({ error: "Todo does not exist." });
-  }
-  const items = userTodo.list;
-
-  return response.status(200).json({ items }).end();
-});
-
-//mark an item complete or update its title and description
-router.patch("/:todoId/list/:itemId", async (request, response) => {
-  const getUser = await handleUserId(request.userId, response);
-
-  const { todoId, itemId } = request.params;
-  const body = request.body;
-
-  if (!todoId) {
-    return response.status(400).json({ error: "Please, include the todo id" });
-  }
-
-  const user = await User.findById(request.userId).populate("todos", {
-    title: 1,
-    description: 1,
-    list: 1,
-    completed: 1,
-  });
-
-  if (!user) {
-    return response.status(404).json({ error: "User not found" });
-  }
-
-  const userTodo = user.todos.find((todo) => todo.id === todoId);
-
-  if (!userTodo) {
-    return response.status(404).json({ error: "Todo does not exist." });
-  }
-
-  const newTodoList = userTodo.list.map((utd) => {
-    if (utd._id.toString() === itemId) {
-      return { ...utd, ...body };
+    if (!todoId) {
+      return response
+        .status(400)
+        .json({ error: "Please, include the todo id" });
     }
-    return utd;
+
+    const user = await User.findById(request.userId).populate("todos", {
+      title: 1,
+      description: 1,
+      list: 1,
+      completed: 1,
+    });
+
+    if (!user) {
+      return response.status(404).json({ error: "User not found" });
+    }
+
+    const userTodo = user.todos.find((todo) => todo.id === todoId);
+
+    if (!userTodo) {
+      return response.status(404).json({ error: "Todo does not exist." });
+    }
+    const items = userTodo.list;
+
+    return response.status(200).json({ items }).end();
+  })
+
+  //mark an item complete or update its title and description
+
+  .patch("/:todoId/list/:itemId", async (request, response) => {
+    const getUser = await handleUserId(request.userId, response);
+
+    const { todoId, itemId } = request.params;
+    const body = request.body;
+
+    if (!todoId) {
+      return response
+        .status(400)
+        .json({ error: "Please, include the todo id" });
+    }
+
+    const user = await User.findById(request.userId).populate("todos", {
+      title: 1,
+      description: 1,
+      list: 1,
+      completed: 1,
+    });
+
+    if (!user) {
+      return response.status(404).json({ error: "User not found" });
+    }
+
+    const userTodo = user.todos.find((todo) => todo.id === todoId);
+
+    if (!userTodo) {
+      return response.status(404).json({ error: "Todo does not exist." });
+    }
+
+    const newTodoList = userTodo.list.map((utd) => {
+      if (utd._id.toString() === itemId) {
+        return { ...utd, ...body };
+      }
+      return utd;
+    });
+
+    userTodo.list = newTodoList;
+
+    try {
+      userTodo.save();
+    } catch (error) {
+      return response.json({ error: error.message });
+    }
+
+    return response.status(200).json({ list: userTodo.list }).end();
+  })
+
+  //delete a specific item from a list
+  //retrieve a specific item from a list
+  .delete("/:todoId/list/:itemId", async (request, response) => {
+    const getUser = await handleUserId(request.userId, response);
+
+    const { todoId, itemId } = request.params;
+
+    if (!todoId) {
+      return response
+        .status(400)
+        .json({ error: "Please, include the todo id" });
+    }
+
+    const user = await User.findById(request.userId).populate("todos", {
+      title: 1,
+      description: 1,
+      list: 1,
+      completed: 1,
+    });
+
+    if (!user) {
+      return response.status(404).json({ error: "User not found" });
+    }
+
+    const userTodo = user.todos.find((todo) => todo.id === todoId);
+
+    if (!userTodo) {
+      return response.status(404).json({ error: "Todo does not exist." });
+    }
+    const items = userTodo.list.filter((utd) => utd._id.toString() !== itemId);
+
+    userTodo.list = items;
+
+    try {
+      userTodo.save();
+    } catch (error) {
+      return response.json({ error: error.message });
+    }
+
+    return response.status(200).json({ items }).end();
   });
-
-  userTodo.list = newTodoList;
-
-  try {
-    userTodo.save();
-  } catch (error) {
-    return response.json({ error: error.message });
-  }
-
-  return response.status(200).json({ list: userTodo.list }).end();
-});
 
 module.exports = router;
