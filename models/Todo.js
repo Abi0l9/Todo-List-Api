@@ -1,11 +1,17 @@
 const mongoose = require("mongoose");
 
 const TodoItem = mongoose.Schema({
+  title: String,
+  description: String,
   item: {
     type: String,
     required: true,
     index: true,
     sparse: true,
+  },
+  completed: {
+    type: Boolean,
+    default: false,
   },
 });
 
@@ -16,10 +22,6 @@ const schema = mongoose.Schema({
   },
   description: String,
   list: [TodoItem],
-  completed: {
-    type: Boolean,
-    default: false,
-  },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",

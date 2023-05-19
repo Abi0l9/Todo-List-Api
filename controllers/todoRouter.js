@@ -132,6 +132,7 @@ router.patch("/:todoId/list", async (request, response) => {
   return response.json({ newItem });
 });
 
+//retrieve a specific item from a list
 router.get("/:todoId/list/:itemId", async (request, response) => {
   const getUser = await handleUserId(request.userId, response);
 
@@ -166,6 +167,7 @@ router.get("/:todoId/list/:itemId", async (request, response) => {
   return response.status(200).json({ item }).end();
 });
 
+//retrieve all items in a todo list
 router.get("/:todoId/list", async (request, response) => {
   const getUser = await handleUserId(request.userId, response);
 
@@ -194,6 +196,52 @@ router.get("/:todoId/list", async (request, response) => {
   const items = userTodo.list;
 
   return response.status(200).json({ items }).end();
+});
+
+//mark an item complete
+router.patch("/:todoId/list/:itemId", async (request, response) => {
+  const getUser = await handleUserId(request.userId, response);
+
+  const { todoId, itemId } = request.params;
+  const { completed } = request.body;
+
+  if (!todoId) {
+    return response.status(400).json({ error: "Please, include the todo id" });
+  }
+
+  const user = await User.findById(request.userId).populate("todos", {
+    title: 1,
+    description: 1,
+    list: 1,
+    completed: 1,
+  });
+
+  if (!user) {
+    return response.status(404).json({ error: "User not found" });
+  }
+
+  const userTodo = user.todos.find((todo) => todo.id === todoId);
+
+  if (!userTodo) {
+    return response.status(404).json({ error: "Todo does not exist." });
+  }
+
+  const newTodoList = userTodo.list.map((utd) => {
+    if (utd._id.toString() === itemId) {
+      return { ...utd, completed };
+    }
+    return utd;
+  });
+
+  userTodo.list = newTodoList;
+
+  try {
+    userTodo.save();
+  } catch (error) {
+    return response.json({ error: error.message });
+  }
+
+  return response.status(200).json({ list: userTodo.list }).end();
 });
 
 module.exports = router;
