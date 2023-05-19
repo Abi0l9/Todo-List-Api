@@ -198,12 +198,12 @@ router.get("/:todoId/list", async (request, response) => {
   return response.status(200).json({ items }).end();
 });
 
-//mark an item complete
+//mark an item complete or update its title and description
 router.patch("/:todoId/list/:itemId", async (request, response) => {
   const getUser = await handleUserId(request.userId, response);
 
   const { todoId, itemId } = request.params;
-  const { completed } = request.body;
+  const body = request.body;
 
   if (!todoId) {
     return response.status(400).json({ error: "Please, include the todo id" });
@@ -228,7 +228,7 @@ router.patch("/:todoId/list/:itemId", async (request, response) => {
 
   const newTodoList = userTodo.list.map((utd) => {
     if (utd._id.toString() === itemId) {
-      return { ...utd, completed };
+      return { ...utd, ...body };
     }
     return utd;
   });
